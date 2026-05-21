@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+qrcode[pil]
+openpyxl
+pandas
+Pillow
+psycopg2-binary
+cloudinary

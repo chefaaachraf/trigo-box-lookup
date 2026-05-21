@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TRIGO — Box Lookup</title>
+  <meta name="theme-color" content="#004983">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="BoxLookup">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <div id="reading-progress"></div>
+  <div id="scan-flash"></div>
+
+  <!-- ── Top Nav ───────────────────────────────────────────────────── -->
+  <nav id="topnav">
+    <div class="nav-brand">
+      <img src="/static/logo.png" alt="TRIGO" class="nav-logo">
+    </div>
+
+    <div class="nav-app">
+      BOX<span>LOOKUP</span>
+      <div class="nav-app-sub">Identification emballage UC</div>
+    </div>
+
+    <a class="nav-tab active" href="#" id="tab-scan">SCAN EMBALLAGE</a>
+    <a class="nav-tab" href="#" id="tab-base">BASE REFS</a>
+    <a class="nav-tab" href="#" id="tab-saisie">SAISIE MANUELLE</a>
+
+    <div class="nav-flex"></div>
+
+    <!-- Bouton QR / accès réseau -->
+    <button id="qr-btn" class="sound-btn" title="Accès depuis un téléphone">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/>
+        <line x1="14" y1="14" x2="14" y2="14"/><line x1="17" y1="14" x2="17" y2="14"/>
+        <line x1="20" y1="14" x2="20" y2="14"/><line x1="14" y1="17" x2="14" y2="17"/>
+        <line x1="20" y1="17" x2="20" y2="17"/><line x1="17" y1="20" x2="20" y2="20"/>
+        <line x1="14" y1="20" x2="14" y2="20"/>
+      </svg>
+      📱
+    </button>
+
+    <!-- Son toggle -->
+    <button id="sound-btn" class="sound-btn active" title="Sons activés / désactivés">
+      <svg id="sound-on-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+      </svg>
+      <svg id="sound-off-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+        <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+      </svg>
+    </button>
+
+    <!-- KPIs -->
+    <div class="nav-kpis">
+      <div class="nav-kpi">
+        <div class="nav-kpi-val" id="kpi-refs">—</div>
+        <div class="nav-kpi-lbl">REFS</div>
+      </div>
+      <div class="nav-kpi-sep"></div>
+      <div class="nav-kpi">
+        <div class="nav-kpi-val" id="kpi-scans">0</div>
+        <div class="nav-kpi-lbl">SCANS</div>
+      </div>
+      <div class="nav-kpi-sep"></div>
+      <div class="nav-kpi">
+        <div class="nav-kpi-val" id="kpi-rate">—</div>
+        <div class="nav-kpi-lbl">SUCCÈS</div>
+      </div>
+    </div>
+
+    <div class="nav-version">v3.0</div>
+  </nav>
+
+  <!-- ── Contenu principal ─────────────────────────────────────────── -->
+  <div class="page-wrap">
+
+    <!-- ═══ VUE SCAN ═══════════════════════════════════════════════ -->
+    <main class="main" id="view-scan">
+
+      <div class="col-left">
+
+        <div class="eyebrow">Scan &amp; identification</div>
+        <h2 class="section-title">Référence / Code-barre GALIA</h2>
+
+        <div class="card card-blue" style="margin-bottom:32px">
+          <div class="card-body">
+            <div class="input-meta">
+              <span class="input-label">CODE-BARRE GALIA OU RÉFÉRENCE PIÈCE</span>
+              <span class="input-hint">↵ Entrée pour valider</span>
+            </div>
+            <div class="input-wrap" id="input-wrap">
+              <span class="scan-icon">⬡</span>
+              <input
+                type="text"
+                id="scan-input"
+                placeholder="Scannez ou saisissez une référence…"
+                autocomplete="off"
+                autocorrect="off"
+                spellcheck="false"
+              >
+              <button type="button" id="camera-btn" class="camera-btn" title="Scanner avec la caméra">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+                Caméra
+              </button>
+              <span class="input-enter">↵</span>
+            </div>
+            <div class="input-foot">
+              Scannez l'étiquette ou tapez la référence pièce puis appuyez sur Entrée
+            </div>
+          </div>
+        </div>
+
+        <div class="eyebrow">Résultat emballage</div>
+        <h2 class="section-title">Emballage UC identifié</h2>
+
+        <div class="card result-card" id="result-card" style="margin-bottom:32px">
+          <div class="card-body">
+            <div class="result-header">
+              <span class="badge b-muted" id="result-badge">EN ATTENTE</span>
+              <code class="result-ref" id="result-ref"></code>
+            </div>
+            <div class="result-uc" id="result-uc">En attente de scan…</div>
+            <div class="result-detail" id="result-detail"></div>
+          </div>
+        </div>
+
+        <div class="eyebrow">Photo emballage</div>
+        <h2 class="section-title">Visuel de l'emballage UC</h2>
+
+        <div class="card card-green">
+          <div class="card-body image-body">
+            <div id="image-placeholder" class="image-placeholder">
+              <div class="img-icon">🗂</div>
+              <div>Aucune image — scannez une référence pour afficher la photo</div>
+            </div>
+            <img id="result-img" class="result-img hidden" alt="Photo emballage UC">
+          </div>
+        </div>
+
+        <!-- ── Emplacement dans le bac ── -->
+        <div id="emplacement-section" class="hidden" style="margin-top:32px">
+          <div class="eyebrow">Emplacement dans le bac</div>
+          <h2 class="section-title">Position de la pièce</h2>
+          <div class="card" style="margin-bottom:32px">
+            <div class="card-body">
+              <div id="emplacement-text" class="emplacement-text"></div>
+              <div id="emplacement-gallery" class="placement-gallery hidden"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── QR code accès mobile ── -->
+        <div class="eyebrow" style="margin-top:32px">Accès mobile</div>
+        <h2 class="section-title">Scanner depuis un téléphone</h2>
+        <div class="card qr-left-card">
+          <div class="card-body qr-left-body">
+            <div class="qr-left-img-wrap">
+              <img id="qr-left-img" src="/api/qrcode.png" alt="QR Code accès mobile" class="qr-left-img">
+              <button id="qr-left-refresh" class="qr-left-refresh" title="Rafraîchir le QR">↺</button>
+            </div>
+            <div class="qr-left-info">
+              <div class="qr-left-label">ADRESSE RÉSEAU</div>
+              <div id="qr-left-url" class="qr-url" style="font-size:.75rem;margin:0 0 10px">—</div>
+              <div class="qr-left-hint">
+                Même réseau Wi-Fi requis<br>
+                <strong>Android</strong> : Chrome → Ajouter à l'écran d'accueil<br>
+                <strong>iPhone</strong> : Safari → Partager → Sur l'écran d'accueil
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Colonne droite : Historique -->
+      <div class="col-right">
+        <div class="history-col-header">
+          <div>
+            <div class="eyebrow">Session en cours</div>
+            <h2 class="section-title" style="margin-bottom:0">Historique des scans</h2>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button id="export-btn" class="btn-export" title="Exporter en CSV">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Exporter CSV
+            </button>
+            <button id="clear-history-btn" class="btn-export btn-export-danger" title="Vider l'historique">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6"/><path d="M14 11v6"/>
+              </svg>
+              Vider
+            </button>
+          </div>
+        </div>
+
+        <!-- Barre de filtre -->
+        <div class="hist-filter-bar" style="margin-top:14px">
+          <div class="hist-filter-search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="hist-search" type="text" placeholder="Rechercher ref, UC…" autocomplete="off" spellcheck="false">
+          </div>
+          <select id="hist-status" class="hist-select">
+            <option value="">Tous les statuts</option>
+            <option value="found">Trouvé</option>
+            <option value="error">Erreur</option>
+            <option value="incomplete">Incomplet</option>
+          </select>
+          <select id="hist-date" class="hist-select">
+            <option value="">Toutes les dates</option>
+            <option value="today">Aujourd'hui</option>
+          </select>
+          <span id="hist-count" class="hist-count"></span>
+        </div>
+
+        <div class="card history-card">
+          <div id="history-empty" class="history-empty">
+            <div>Aucun scan enregistré pour cette session</div>
+          </div>
+          <div class="tbl hidden" id="history-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date / Heure</th>
+                  <th>Référence</th>
+                  <th>UC</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody id="history-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ═══ VUE BASE REFS ══════════════════════════════════════════ -->
+    <div class="main base-layout" id="view-base" style="display:none">
+
+      <div style="grid-column:1/-1">
+        <div class="eyebrow">Consultation</div>
+        <h2 class="section-title">Base des références et emballages</h2>
+
+        <div class="card card-blue" style="margin-bottom:20px">
+          <div class="card-body" style="padding:14px 20px">
+            <div class="base-search-wrap">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted-light);flex-shrink:0">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                id="base-search"
+                type="text"
+                class="base-search-input"
+                placeholder="Rechercher par référence ou par code UC…"
+                autocomplete="off"
+                spellcheck="false"
+              >
+              <span id="base-count" class="base-count">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card history-card">
+          <div id="base-empty" class="history-empty hidden">Aucun résultat</div>
+          <div class="tbl" id="base-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Référence (normalisée)</th>
+                  <th>UC / Emballage</th>
+                </tr>
+              </thead>
+              <tbody id="base-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══ VUE SAISIE MANUELLE ════════════════════════════════════ -->
+    <div class="main" id="view-saisie" style="display:none">
+
+      <div class="col-left">
+
+        <div class="eyebrow">Nouveau mapping</div>
+        <h2 class="section-title">Ajouter une référence</h2>
+
+        <div class="card card-blue" style="margin-bottom:32px">
+          <div class="card-body">
+            <form id="add-form" autocomplete="off">
+
+              <div class="form-group">
+                <label class="input-label" for="add-ref">RÉFÉRENCE PIÈCE</label>
+                <input id="add-ref" type="text" class="form-input" placeholder="ex : 110675590R" spellcheck="false">
+              </div>
+
+              <div class="form-group">
+                <label class="input-label" for="add-uc">CODE UC (EMBALLAGE)</label>
+                <input id="add-uc" type="text" class="form-input" placeholder="ex : BAC-O-4325" spellcheck="false">
+              </div>
+
+              <div class="form-group">
+                <label class="input-label" for="add-desc">DESCRIPTION <span style="font-weight:400;letter-spacing:0">(optionnel)</span></label>
+                <input id="add-desc" type="text" class="form-input" placeholder="ex : Bac ouvert 435×290×220 mm">
+              </div>
+
+              <div class="form-group">
+                <label class="input-label" for="add-emplacement">EMPLACEMENT DANS LE BAC <span style="font-weight:400;letter-spacing:0">(optionnel)</span></label>
+                <input id="add-emplacement" type="text" class="form-input" placeholder="ex : Allée A — Bac B7 — Étagère 2" spellcheck="false">
+              </div>
+
+              <div class="form-group">
+                <label class="input-label">PHOTO DE L'EMBALLAGE <span style="font-weight:400;letter-spacing:0">(optionnel)</span></label>
+                <label class="photo-drop" id="photo-drop" for="add-photo">
+                  <div id="photo-preview-wrap" class="hidden">
+                    <img id="photo-preview" alt="Aperçu">
+                  </div>
+                  <div id="photo-placeholder">
+                    <div class="photo-icon">📷</div>
+                    <div class="photo-hint">Cliquez pour importer ou prendre une photo</div>
+                  </div>
+                </label>
+                <input id="add-photo" type="file" accept="image/*" style="display:none">
+              </div>
+
+              <div class="form-group">
+                <label class="input-label">PHOTO D'EMPLACEMENT <span style="font-weight:400;letter-spacing:0">(optionnel)</span></label>
+                <label class="photo-drop" id="placement-drop" for="add-placement-photo">
+                  <div id="placement-preview-wrap" class="hidden placement-thumbs-wrap"></div>
+                  <div id="placement-placeholder">
+                    <div class="photo-icon">📍</div>
+                    <div class="photo-hint">Cliquez ou glissez — plusieurs photos autorisées</div>
+                  </div>
+                </label>
+                <input id="add-placement-photo" type="file" accept="image/*" multiple style="display:none">
+              </div>
+
+              <div id="add-feedback" class="add-feedback hidden"></div>
+
+              <button type="submit" class="btn-primary">Enregistrer la référence</button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="col-right">
+        <div class="eyebrow">Base manuelle</div>
+        <h2 class="section-title">Références ajoutées manuellement</h2>
+
+        <div class="card history-card">
+          <div id="manual-empty" class="history-empty">Aucune entrée manuelle enregistrée</div>
+          <div class="tbl hidden" id="manual-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Référence</th>
+                  <th>UC</th>
+                  <th>Emplacement</th>
+                  <th>Description</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="manual-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- /page-wrap -->
+
+  <!-- ── Barre de statut ───────────────────────────────────────────── -->
+  <footer class="statusbar">
+    <div class="status-left">
+      <span class="status-dot" id="status-dot">●</span>
+      <span id="status-msg">Chargement…</span>
+    </div>
+    <div class="status-right">
+      TRIGO SAS &nbsp;|&nbsp; Qualité &amp; Logistique
+    </div>
+  </footer>
+
+  <!-- ── Modal caméra ───────────────────────────────────────────── -->
+  <div id="camera-modal" class="camera-modal hidden">
+    <div class="camera-dialog">
+      <div class="camera-hdr">
+        <div class="camera-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+          Scanner par caméra
+        </div>
+        <button id="camera-close" class="camera-close">✕</button>
+      </div>
+      <div class="camera-content">
+        <div class="video-wrap">
+          <video id="camera-video" autoplay muted playsinline></video>
+          <div class="scan-beam"></div>
+          <div class="scan-corners">
+            <span class="corner tl"></span><span class="corner tr"></span>
+            <span class="corner bl"></span><span class="corner br"></span>
+          </div>
+        </div>
+        <div id="camera-status" class="camera-status">Initialisation de la caméra…</div>
+        <select id="camera-select" class="camera-select hidden"></select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal QR code / accès réseau ──────────────────────────── -->
+  <div id="qr-modal" class="camera-modal hidden">
+    <div class="camera-dialog" style="max-width:360px">
+      <div class="camera-hdr">
+        <div class="camera-title">📱 Accès depuis un téléphone</div>
+        <button id="qr-close" class="camera-close">✕</button>
+      </div>
+      <div class="qr-content">
+        <img id="qr-img" class="qr-img" src="" alt="QR Code">
+        <div id="qr-url" class="qr-url">—</div>
+        <div class="qr-steps">
+          <div class="qr-step"><span class="qr-num">1</span>Connectez le téléphone au <strong>même réseau Wi-Fi</strong> que ce PC</div>
+          <div class="qr-step"><span class="qr-num">2</span>Scannez le QR code avec l'appareil photo</div>
+          <div class="qr-step"><span class="qr-num">3</span><strong>Android :</strong> Chrome → menu ⋮ → <em>Ajouter à l'écran d'accueil</em></div>
+          <div class="qr-step"><span class="qr-num">3</span><strong>iPhone :</strong> Safari → partager → <em>Sur l'écran d'accueil</em></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
