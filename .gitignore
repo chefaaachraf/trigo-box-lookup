@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Données runtime locales (remplacées par PostgreSQL en cloud)
+scan_history.json
+manual_entries.json
+
+# Images locales (remplacées par Cloudinary en cloud)
+box_images/
+placement_images/
