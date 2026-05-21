@@ -5,7 +5,11 @@ from psycopg2.extras import RealDictCursor
 
 
 def _conn():
-    return psycopg2.connect(os.environ["DATABASE_URL"])
+    url = os.environ["DATABASE_URL"]
+    # Supabase exige SSL
+    if "sslmode" not in url:
+        url += "?sslmode=require"
+    return psycopg2.connect(url)
 
 
 def init():

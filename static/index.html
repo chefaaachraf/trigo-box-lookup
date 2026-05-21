@@ -46,6 +46,15 @@
       📱
     </button>
 
+    <!-- Bouton documentation -->
+    <button id="doc-btn" class="sound-btn" title="Documentation / Aide">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </button>
+
     <!-- Son toggle -->
     <button id="sound-btn" class="sound-btn active" title="Sons activés / désactivés">
       <svg id="sound-on-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -446,6 +455,101 @@
           <div class="qr-step"><span class="qr-num">3</span><strong>Android :</strong> Chrome → menu ⋮ → <em>Ajouter à l'écran d'accueil</em></div>
           <div class="qr-step"><span class="qr-num">3</span><strong>iPhone :</strong> Safari → partager → <em>Sur l'écran d'accueil</em></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal Documentation ───────────────────────────────────── -->
+  <div id="doc-modal" class="camera-modal hidden">
+    <div class="camera-dialog doc-dialog">
+      <div class="camera-hdr">
+        <div class="camera-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          Aide &amp; Documentation
+        </div>
+        <button id="doc-close" class="camera-close">✕</button>
+      </div>
+      <div class="doc-content">
+
+        <div class="doc-section">
+          <div class="doc-section-title">Scanner une référence</div>
+          <ol class="doc-steps">
+            <li>Cliquer dans le champ de saisie</li>
+            <li>Scanner le code-barres <strong>ou</strong> taper la référence manuellement</li>
+            <li>Appuyer sur <kbd>Entrée</kbd></li>
+          </ol>
+          <div class="doc-badges-row">
+            <span class="badge b-ok">TROUVÉ</span> UC identifié &nbsp;
+            <span class="badge b-warn">INCOMPLET</span> UC manquant &nbsp;
+            <span class="badge b-nok">ERREUR</span> Référence inconnue
+          </div>
+        </div>
+
+        <div class="doc-section">
+          <div class="doc-section-title">Onglets disponibles</div>
+          <div class="doc-table-wrap">
+            <table class="doc-table">
+              <thead><tr><th>Onglet</th><th>Usage</th></tr></thead>
+              <tbody>
+                <tr><td><strong>SCAN EMBALLAGE</strong></td><td>Identifier un UC par scan ou saisie</td></tr>
+                <tr><td><strong>BASE REFS</strong></td><td>Consulter toutes les références disponibles</td></tr>
+                <tr><td><strong>SAISIE MANUELLE</strong></td><td>Ajouter / modifier / supprimer des associations référence → UC</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="doc-section">
+          <div class="doc-section-title">Ajouter une référence manquante</div>
+          <ol class="doc-steps">
+            <li>Aller dans l'onglet <strong>SAISIE MANUELLE</strong></li>
+            <li>Renseigner la Référence + le code UC (obligatoires)</li>
+            <li>Ajouter un emplacement et une photo si disponibles</li>
+            <li>Cliquer sur <strong>Enregistrer</strong></li>
+          </ol>
+        </div>
+
+        <div class="doc-section">
+          <div class="doc-section-title">Accès depuis un téléphone</div>
+          <ol class="doc-steps">
+            <li>Être sur le <strong>même réseau Wi-Fi</strong> que ce PC</li>
+            <li>Cliquer sur le bouton <strong>📱</strong> dans la barre de navigation</li>
+            <li>Scanner le QR code affiché</li>
+            <li>Sur iPhone : Safari → Partager → <em>Sur l'écran d'accueil</em></li>
+            <li>Sur Android : Chrome → menu ⋮ → <em>Ajouter à l'écran d'accueil</em></li>
+          </ol>
+        </div>
+
+        <div class="doc-section">
+          <div class="doc-section-title">Historique des scans</div>
+          <ul class="doc-steps">
+            <li>Visible dans la colonne droite de l'onglet <strong>SCAN EMBALLAGE</strong></li>
+            <li>Filtres disponibles : statut, date, recherche texte</li>
+            <li>Bouton <strong>Exporter CSV</strong> pour télécharger l'historique</li>
+            <li>Bouton <strong>Vider</strong> pour réinitialiser</li>
+          </ul>
+        </div>
+
+        <div class="doc-section">
+          <div class="doc-section-title">Dépannage rapide</div>
+          <div class="doc-table-wrap">
+            <table class="doc-table">
+              <thead><tr><th>Problème</th><th>Solution</th></tr></thead>
+              <tbody>
+                <tr><td>Référence non trouvée</td><td>Ajouter via Saisie Manuelle</td></tr>
+                <tr><td>Pas de photo</td><td>Uploader via Saisie Manuelle</td></tr>
+                <tr><td>Téléphone ne se connecte pas</td><td>Vérifier le même réseau Wi-Fi</td></tr>
+                <tr><td>Serveur planté</td><td>Fermer et relancer <code>lancer_app.bat</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="doc-footer">TRIGO Box Lookup v3.0 — TRIGO SAS</div>
       </div>
     </div>
   </div>

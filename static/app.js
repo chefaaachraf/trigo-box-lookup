@@ -683,6 +683,15 @@ qrBtn.addEventListener('click', async () => {
 qrClose.addEventListener('click', () => qrModal.classList.add('hidden'));
 qrModal.addEventListener('click', e => { if (e.target === qrModal) qrModal.classList.add('hidden'); });
 
+// ── Documentation ─────────────────────────────────────────────────────────────
+const docBtn   = document.getElementById('doc-btn');
+const docModal = document.getElementById('doc-modal');
+const docClose = document.getElementById('doc-close');
+
+docBtn.addEventListener('click', () => docModal.classList.remove('hidden'));
+docClose.addEventListener('click', () => docModal.classList.add('hidden'));
+docModal.addEventListener('click', e => { if (e.target === docModal) docModal.classList.add('hidden'); });
+
 // ── Scanner caméra ────────────────────────────────────────────────────────────
 let _zxing   = null;
 let _scanning = false;
